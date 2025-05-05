@@ -84,8 +84,10 @@ docker-compose up --build -d
 - 부 기능 3
 
 ## ⚙️ 기술 스택
-- Backend : Java 17, Spring Boot 3.4.0, Spring Security, Spring Data JPA
-- Database : MySQL, Redis
+- OS : Windows11, Ubuntu 24.04 LTS
+- Backend : Java 17, Spring Boot 3.4.0
+- Database : MySQL, Redis, Spring Data JPA
+- Security : Spring Security, OAuth2.0, JWT
 - Test Tool : Postman
 - DevOps : Docker, Git
 - ETC : InteliJ
