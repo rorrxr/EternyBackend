@@ -3,7 +3,7 @@
 
 1. `src/main/java` 하위 패키지 구조 변경
 ```plaintext
-ex) `com.group.template` → `com.company.project_name`
+ex) `com.group.template` → `com.company.eterny`
 ```
 
 2. SpringBoot Main Class 이름 변경
