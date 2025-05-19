@@ -1,6 +1,8 @@
 package com.company.eterny.bser.controller;
 
 
+import com.company.eterny.bser.dto.BserGameDto;
+import com.company.eterny.bser.dto.BserRankDto;
 import com.company.eterny.bser.dto.NicknameData;
 import com.company.eterny.bser.service.BserService;
 import com.company.eterny.global.dto.CommonResponse;
@@ -16,6 +18,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/bser")
+@CrossOrigin(origins = "http://localhost:3000")
 public class BserProxyController {
 
     @Autowired
@@ -35,20 +38,31 @@ public class BserProxyController {
         return h;
     }
 
+    /** 닉네임 검색 **/
     @GetMapping("/user/nickname")
-    public CommonResponse<List<NicknameData>> searchByNickname(
+    public CommonResponse<List<NicknameData>> searchUserByNickname(
             @RequestParam("query") String query) {
-        System.out.println("searchByNickname called, query=" + query);
-
-        List<NicknameData> list = bserService.getUserByNickname(query);
-        return new CommonResponse<>(200, "Success", list);
+        List<NicknameData> users = bserService.getUserByNickname(query);
+        return new CommonResponse<>(200, "Success", users);
     }
 
+    /** 전적 검색 **/
     @GetMapping("/games/{userNum}")
-    public ResponseEntity<Object> getGames(@PathVariable Long userNum) {
-        String url = String.format("%s/user/games/%d", BSER_BASE, userNum);
-        return rt.exchange(
-                url, HttpMethod.GET, new HttpEntity<>(headers()), Object.class
-        );
+    public CommonResponse<List<BserGameDto>> getGames(@PathVariable Long userNum) {
+        List<BserGameDto> games = bserService.getGamesByUser(userNum);
+        // new CommonResponse<>(code, message, data) 를 쓰면 code 필드에 200이,
+        // status 필드는 기본값인 0이 들어갑니다.
+        return new CommonResponse<>(200, "Success", games);
+    }
+
+    /** 랭크 검색 **/
+    @GetMapping("/rank/{userNum}/{seasonId}/{mode}")
+    public CommonResponse<BserRankDto> getRank(
+            @PathVariable Long userNum,
+            @PathVariable int seasonId,
+            @PathVariable int mode
+    ) {
+        BserRankDto rank = bserService.getRankByUser(userNum, seasonId, mode);
+        return new CommonResponse<>(200, "Success", rank);
     }
 }
