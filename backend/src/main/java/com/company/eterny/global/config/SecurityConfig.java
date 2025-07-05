@@ -44,23 +44,26 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/error").permitAll()
-                        .requestMatchers("/api/bser/**").permitAll()
-//                        .requestMatchers("/api/**").authenticated()
-//                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/api/v1/**",               // ✅ 전체 API 열어두기
+                                "/swagger-ui/**", "/v3/api-docs/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
-//                .oauth2Login(oauth2 -> oauth2
-//                        .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
-//                        .userInfoEndpoint(u -> u.oidcUserService(customOAuth2OidcUserService))
-//                        .successHandler(customOAuth2AuthenticationSuccessHandler)
-//                        .failureHandler(customOAuth2AuthenticationFailureHandler)
-//                )
-//                .exceptionHandling(ex -> ex
-//                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-//                        .accessDeniedHandler(jwtAccessDeniedHandler)
-//                )
-//                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+//            .oauth2Login(oauth2 -> oauth2
+//                    .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
+//                    .userInfoEndpoint(u -> u.oidcUserService(customOAuth2OidcUserService))
+//                    .successHandler(customOAuth2AuthenticationSuccessHandler)
+//                    .failureHandler(customOAuth2AuthenticationFailureHandler)
+//            )
+//            .exceptionHandling(ex -> ex
+//                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+//                    .accessDeniedHandler(jwtAccessDeniedHandler)
+//            )
+//            .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
