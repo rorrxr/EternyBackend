@@ -1,4 +1,4 @@
-package com.company.eterny.bser.dto;
+package com.company.eterny.infrastructure.external.bser.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
