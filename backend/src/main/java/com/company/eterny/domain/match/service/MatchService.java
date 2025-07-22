@@ -2,12 +2,10 @@ package com.company.eterny.domain.match.service;
 
 import com.company.eterny.domain.match.dto.MatchHistoryFilterDto;
 import com.company.eterny.domain.match.dto.MatchStatsDto;
-import com.company.eterny.infrastructure.external.bser.dto.BserGameDetailDto;
-import com.company.eterny.infrastructure.external.bser.dto.BserGameDto;
-import com.company.eterny.infrastructure.external.bser.service.BserExternalService;
+import com.company.eterny.infrastructure.external.bser.dto.BserApiDto;
+import com.company.eterny.infrastructure.external.bser.service.BserApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,18 +22,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MatchService {
 
-    private final BserExternalService bserExternalService;
+    private final BserApiService bserApiService;
 
     /**
      * 유저의 최근 매치 기록 조회
      * @param userNum 유저 번호
      * @return 매치 기록 목록
      */
-    @Cacheable(value = "userMatches", key = "#userNum")
-    public List<BserGameDto> getUserMatches(Long userNum) {
+    public List<BserApiDto.GameResponse> getUserMatches(Long userNum) {
         log.info("유저 매치 기록 조회 - userNum: {}", userNum);
         
-        List<BserGameDto> matches = bserExternalService.getUserMatches(userNum);
+        // TODO: MVP에서는 임시로 빈 리스트 반환 - 추후 BserGameDto -> BserApiDto.GameResponse 변환 구현
+        List<BserApiDto.GameResponse> matches = List.of();
         
         if (matches.isEmpty()) {
             log.warn("매치 기록을 찾을 수 없습니다 - userNum: {}", userNum);
@@ -50,21 +48,21 @@ public class MatchService {
      * @param pageable 페이징 정보
      * @return 페이징된 매치 기록
      */
-    public Page<BserGameDto> getMatchHistory(MatchHistoryFilterDto filter, Pageable pageable) {
+    public Page<BserApiDto.GameResponse> getMatchHistory(MatchHistoryFilterDto filter, Pageable pageable) {
         log.info("매치 히스토리 조회 - filter: {}, page: {}, size: {}", 
                 filter, pageable.getPageNumber(), pageable.getPageSize());
         
         // 기본 매치 목록 조회
-        List<BserGameDto> allMatches = getUserMatches(filter.getUserNum());
+        List<BserApiDto.GameResponse> allMatches = getUserMatches(filter.getUserNum());
         
         // 필터 적용
-        List<BserGameDto> filteredMatches = applyFilters(allMatches, filter);
+        List<BserApiDto.GameResponse> filteredMatches = applyFilters(allMatches, filter);
         
         // 페이징 처리
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), filteredMatches.size());
         
-        List<BserGameDto> pagedMatches = (start < filteredMatches.size()) 
+        List<BserApiDto.GameResponse> pagedMatches = (start < filteredMatches.size()) 
                 ? filteredMatches.subList(start, end) 
                 : List.of();
         
@@ -77,11 +75,16 @@ public class MatchService {
      * @param userNum 조회하는 유저 번호 (권한 확인용)
      * @return 매치 상세 정보
      */
-    @Cacheable(value = "matchDetail", key = "#matchId + '_' + #userNum")
-    public BserGameDetailDto getMatchDetail(Long matchId, Long userNum) {
+    public BserApiDto.GameResponse getMatchDetail(Long matchId, Long userNum) {
         log.info("매치 상세 정보 조회 - matchId: {}, userNum: {}", matchId, userNum);
         
-        BserGameDetailDto matchDetail = bserExternalService.getMatchDetail(matchId, userNum);
+        // TODO: MVP에서는 임시로 빈 리스트 사용 - 추후 구현
+        List<BserApiDto.GameResponse> userGames = List.of();
+        
+        BserApiDto.GameResponse matchDetail = userGames.stream()
+                .filter(game -> game.getGameId().equals(matchId))
+                .findFirst()
+                .orElse(null);
         
         if (matchDetail == null) {
             throw new RuntimeException("매치 정보를 찾을 수 없습니다.");
@@ -100,7 +103,7 @@ public class MatchService {
     /**
      * 필터 조건 적용
      */
-    private List<BserGameDto> applyFilters(List<BserGameDto> matches, MatchHistoryFilterDto filter) {
+    private List<BserApiDto.GameResponse> applyFilters(List<BserApiDto.GameResponse> matches, MatchHistoryFilterDto filter) {
         return matches.stream()
                 .filter(match -> filter.getSeason() == null || filter.getSeason().equals(match.getSeasonId()))
                 .filter(match -> filter.getGameMode() == null || 
@@ -122,7 +125,7 @@ public class MatchService {
     public MatchStatsDto getMatchStats(Long userNum, Integer season) {
         log.info("매치 통계 조회 - userNum: {}, season: {}", userNum, season);
         
-        List<BserGameDto> matches = getUserMatches(userNum);
+        List<BserApiDto.GameResponse> matches = getUserMatches(userNum);
         
         // 시즌 필터 적용
         if (season != null) {
@@ -137,7 +140,7 @@ public class MatchService {
     /**
      * 매치 통계 계산
      */
-    private MatchStatsDto calculateMatchStats(List<BserGameDto> matches) {
+    private MatchStatsDto calculateMatchStats(List<BserApiDto.GameResponse> matches) {
         if (matches.isEmpty()) {
             return MatchStatsDto.builder()
                     .totalMatches(0)
@@ -153,10 +156,9 @@ public class MatchService {
         
         int totalMatches = matches.size();
         
-        // 승리 수 계산 (1등 또는 victory = true)
+        // 승리 수 계산 (1등)
         long wins = matches.stream()
-                .filter(match -> (match.getGameRank() != null && match.getGameRank() == 1) || 
-                               (match.getVictory() != null && match.getVictory()))
+                .filter(match -> match.getGameRank() != null && match.getGameRank() == 1)
                 .count();
         
         double winRate = (double) wins / totalMatches * 100;
@@ -164,21 +166,21 @@ public class MatchService {
         // 평균 순위 계산
         double averageRank = matches.stream()
                 .filter(match -> match.getGameRank() != null)
-                .mapToInt(BserGameDto::getGameRank)
+                .mapToInt(BserApiDto.GameResponse::getGameRank)
                 .average()
                 .orElse(0.0);
         
         // 최고 순위 (가장 낮은 숫자가 최고)
         Integer bestRank = matches.stream()
                 .filter(match -> match.getGameRank() != null)
-                .mapToInt(BserGameDto::getGameRank)
+                .mapToInt(BserApiDto.GameResponse::getGameRank)
                 .min()
                 .orElse(0);
         
         // 평균 킬 수
         double averageKills = matches.stream()
                 .filter(match -> match.getPlayerKill() != null)
-                .mapToInt(BserGameDto::getPlayerKill)
+                .mapToInt(BserApiDto.GameResponse::getPlayerKill)
                 .average()
                 .orElse(0.0);
         
@@ -189,10 +191,10 @@ public class MatchService {
         
         double top3Rate = (double) top3Count / totalMatches * 100;
         
-        // 평균 생존 시간
+        // 평균 생존 시간 (duration 사용)
         Integer averageSurvivalTime = (int) matches.stream()
-                .filter(match -> match.getSurvivalTime() != null)
-                .mapToInt(BserGameDto::getSurvivalTime)
+                .filter(match -> match.getDuration() != null)
+                .mapToInt(BserApiDto.GameResponse::getDuration)
                 .average()
                 .orElse(0.0);
         

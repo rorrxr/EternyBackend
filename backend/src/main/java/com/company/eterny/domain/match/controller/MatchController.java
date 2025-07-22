@@ -86,7 +86,8 @@ public class MatchController {
             filter.setEndDate(endDate);
             
             Pageable pageable = PageRequest.of(page, size);
-            Page<BserGameDto> matchHistory = matchService.getMatchHistory(filter, pageable);
+            // TODO: MVP에서는 임시로 빈 페이지 반환
+            Page<BserGameDto> matchHistory = Page.empty();
             
             return ResponseEntity.ok(
                 new CommonResponse<>(200, "매치 히스토리 조회 성공", matchHistory)
@@ -154,7 +155,8 @@ public class MatchController {
         log.info("최근 매치 조회 요청 - userNum: {}, limit: {}", userNum, limit);
         
         try {
-            java.util.List<BserGameDto> matches = matchService.getUserMatches(userNum);
+            // TODO: MVP에서는 임시로 빈 리스트 반환
+            java.util.List<BserGameDto> matches = java.util.List.of();
             
             // 제한된 개수만 반환
             java.util.List<BserGameDto> limitedMatches = matches.stream()
