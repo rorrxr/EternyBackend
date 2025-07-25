@@ -1,9 +1,8 @@
-package com.company.eterny.bser.service;
+package com.company.eterny.infrastructure.bser.service;
 
-import com.company.eterny.bser.dto.*;
-import lombok.RequiredArgsConstructor;  // @Autowired 제거
+import com.company.eterny.infrastructure.external.bser.dto.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,8 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * BSER API 연동 서비스
+ */
 @Service
-@RequiredArgsConstructor  // 생성자 주입
+@RequiredArgsConstructor
 public class BserService {
 
     private final RestTemplate rt;
@@ -37,18 +39,18 @@ public class BserService {
     }
 
     /** 닉네임으로 유저 검색 */
-    public List<NicknameData> getUserByNickname(String nickname) {
+    public List<NicknameDto> getUserByNickname(String nickname) {
         String url = BSER_BASE + "/user/nickname?query=" +
                 UriUtils.encode(nickname, StandardCharsets.UTF_8);
         HttpEntity<Void> entity = new HttpEntity<>(headers());
 
         try {
-            ResponseEntity<BserUserResponse<NicknameData>> resp = rt.exchange(
+            ResponseEntity<BserUserResponse<NicknameDto>> resp = rt.exchange(
                     url, HttpMethod.GET, entity,
                     new ParameterizedTypeReference<>() {}
             );
 
-            BserUserResponse<NicknameData> body = resp.getBody();
+            BserUserResponse<NicknameDto> body = resp.getBody();
 
             return (body != null && body.getUser() != null)
                     ? body.getUser()
@@ -62,8 +64,6 @@ public class BserService {
             throw new RuntimeException("BSER API 호출 실패: " + ex.getMessage());
         }
     }
-
-
 
     /** 게임 전적 가져오기 */
     public List<BserGameDto> getGamesByUser(Long userNum) {
