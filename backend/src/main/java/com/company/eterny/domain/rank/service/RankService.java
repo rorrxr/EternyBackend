@@ -1,9 +1,10 @@
 package com.company.eterny.domain.rank.service;
 
 import com.company.eterny.domain.rank.dto.RankPredictionDto;
+import com.company.eterny.infrastructure.bser.service.BserService;
 import com.company.eterny.infrastructure.external.bser.dto.BserRankDto;
 import com.company.eterny.infrastructure.external.bser.dto.BserTopRankDto;
-import com.company.eterny.infrastructure.external.bser.service.BserExternalService;
+import com.company.eterny.infrastructure.external.bser.service.BserApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RankService {
 
-    private final BserExternalService bserExternalService;
+    private final BserService bserExternalService;
 
     /**
      * 플레이어 랭크 정보 조회
@@ -35,7 +36,8 @@ public class RankService {
     public BserRankDto getPlayerRank(Long userNum, Integer season, Integer teamMode) {
         log.info("플레이어 랭크 정보 조회 - userNum: {}, season: {}, teamMode: {}", userNum, season, teamMode);
         
-        BserRankDto rankInfo = bserExternalService.getUserRank(userNum, season, teamMode);
+        // TODO: MVP에서는 임시로 null 반환
+        BserRankDto rankInfo = null;
         
         if (rankInfo == null) {
             log.warn("랭크 정보를 찾을 수 없습니다 - userNum: {}", userNum);
@@ -56,7 +58,8 @@ public class RankService {
         log.info("리더보드 조회 - season: {}, teamMode: {}, page: {}, size: {}", 
                 season, teamMode, pageable.getPageNumber(), pageable.getPageSize());
         
-        List<BserTopRankDto> allRanks = bserExternalService.getLeaderboard(season, teamMode);
+        // TODO: MVP에서는 임시로 빈 리스트 반환
+        List<BserTopRankDto> allRanks = java.util.List.of();
         
         // 페이징 처리
         int start = (int) pageable.getOffset();
