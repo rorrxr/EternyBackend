@@ -1,7 +1,6 @@
 package com.company.eterny.domain.auth.oauth.service;
 
 import com.company.eterny.domain.auth.jwt.CustomUserDetails;
-import com.company.eterny.auth.oauth.dto.*;
 import com.company.eterny.domain.auth.oauth.dto.*;
 import com.company.eterny.domain.auth.oauth.entity.OAuthProvider;
 import com.company.eterny.domain.login.entity.Role;
