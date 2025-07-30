@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+review:
+  enabled: true
+  base_branches:
+    - master
+    - develop
+    - develop-kmj
+    - feature/*
+  profile: chill
+  review_status: true
+  request_changes_workflow: true
+
+walkthrough:
+  enabled: true
+  collapse: true
+
+high_level_summary:
+  enabled: true
+  placeholder: "@coderabbitai summary"
+  in_walkthrough: true
+
+auto_title:
+  placeholder: "@coderabbitai"
+
+commit_status:
+  enabled: true
+  fail_on_error: true
+
+changed_files_summary:
+  enabled: true
+
+sequence_diagrams:
+  enabled: false  # 필요하면 true로 변경
+
+assess_linked_issues: true
+related_issues: true
+related_prs: true
+
+labels:
+  suggest: true
+  auto_apply: false
+
+reviewers:
+  suggest: false
+  auto_assign: false
+
+poem:
+  enabled: false
+
+finishing_touches:
+  abort_on_close: true
+  disable_cache: false
